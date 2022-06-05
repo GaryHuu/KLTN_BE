@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\ImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,7 +61,7 @@ Route::get('products/{product}', function (Product $product){
 Route::post('admin-login', [AdminController::class, 'login']);
 Route::group([
     'prefix' => 'admin',
-    'middleware' => ['assign.guard:admins','jwt.auth']
+//    'middleware' => ['assign.guard:admins','jwt.auth']
 ], function(){
     Route::post('admin-register', [AdminController::class, 'register']);
     Route::post('create-banner', [SlideController::class, 'store']);
@@ -72,7 +73,7 @@ Route::group([
     Route::delete('user/{user}', [AdminUserController::class, 'delete']);
 });
 
-
+Route::post('upload', ImageController::class);
 Route::post('is-favorite', [FavoriteController::class, 'isFavorite']);
 
 

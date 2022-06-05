@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Models\Image;
 use App\Models\Product;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Storage;
 
 class ProductService
@@ -12,6 +13,28 @@ class ProductService
         Image::create([
             'name' => basename($path),
             'url' => Storage::disk('s3')->url($path),
+            'size' => $image->getSize(),
+            'imageable_id' => $productID,
+            'imageable_type' => Product::class
+        ]);
+    }
+
+    public function handleUploadProductImageCloud($image, $productID){
+        $path = Cloudinary::upload($image->getRealPath())->getSecurePath();
+        Image::create([
+            'name' => basename($path),
+            'url' => $path,
+            'size' => $image->getSize(),
+            'imageable_id' => $productID,
+            'imageable_type' => Product::class
+        ]);
+    }
+
+    public function handleUpdateProductImageCloud($image, $productID){
+        $path = Cloudinary::upload($image->getRealPath())->getSecurePath();
+        Image::create([
+            'name' => basename($path),
+            'url' => $path,
             'size' => $image->getSize(),
             'imageable_id' => $productID,
             'imageable_type' => Product::class
