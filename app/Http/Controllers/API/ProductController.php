@@ -10,6 +10,7 @@ use App\Models\Image;
 use App\Models\Product;
 use App\Services\ProductService;
 use App\Transformers\ProductTransformer;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -76,35 +77,24 @@ class ProductController extends Controller
     public function store( StoreProductRequest $request, ProductService $productService)
     {
         $product = Product::create($request->validated());
-        $productService->handleUploadProductImage($request->images,$product->id);
+        $productService->handleUploadProductImageCloud($request->images,$product->id);
         return responder()->success($product, new ProductTransformer)->respond();
     }
 
     /**
-     * Update product.
-     *
      * @param UpdateProductRequest $request
-     * @param $product
+     * @param Product $product
      * @param ProductService $productService
      * @return JsonResponse
      */
-    public function update(UpdateProductRequest $request, $product, ProductService $productService)
+    public function update(UpdateProductRequest $request, Product $product, ProductService $productService)
     {
-        Product::query()->where('id', $product)->update($request->validated());
-        if($request->hasFile('images')){
-            $path = $request->file('images')->store('images/vcanh', 's3');
-            $isImage = Image::where('imageable_id', $product)->first();
-            if(!$isImage){
-                $productService->handleUpdateProductImage($request->file('images'), $path, $product);
-            }else{
-                Image::query()->where('imageable_id', $product)->update([
-                    'name' => basename($path),
-                    'url' => Storage::disk('s3')->url($path),
-                    'size' => $request->file('images')->getSize(),
-                ]);
-            }
+        if($request->images) {
+            Image::query()->where('imageable_id', $product->id)->forceDelete();;
+            $productService->handleUploadProductImageCloud($request->images,$product->id);
         }
-        return responder()->success(Product::query()->where('id', $product)->get(), new ProductTransformer)->respond();
+        $product->update($request->all());
+        return responder()->success($product, new ProductTransformer)->respond();
     }
 
     /**
