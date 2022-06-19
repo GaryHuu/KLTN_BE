@@ -23,5 +23,10 @@ class UserSeeder extends Seeder
             'gender' => '1',
             'birthday' => '1994-06-20'
         ]);
+        DB::table('admins')->insert([
+            'name' => 'Văn Cảnh',
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('123123')
+        ]);
     }
 }
